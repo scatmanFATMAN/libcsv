@@ -96,12 +96,6 @@
  */
 
 /**
- * The number of bytes to read from a file when the library is in streaming
- * mode.
- */
-#define CSV_READ_SIZE 1024
-
-/**
  * The possible return values for csv_read().
  */
 typedef enum {
@@ -136,6 +130,20 @@ csv_t * csv_init();
  * @param[in] csv A CSV handle.
  */
 void csv_free(csv_t *csv);
+
+/**
+ * @brief Sets the read size used by the CSV handle.
+ *
+ * Use this to tell the library how much data to read at a time when parsing
+ * a file in streaming mode. Depending on how long the lines are in the CSV
+ * document, different values may offer different performance benefits (or
+ * penalties!). The default value is 1024.
+ *
+ * @param[in] csv A CSV handle.
+ * @param[in] read_size The size of the read buffer.
+ */
+void csv_set_read_size(csv_t *csv, unsigned int read_size) {
+}
 
 /**
  * @brief Returns the error message from a previously failed operation.

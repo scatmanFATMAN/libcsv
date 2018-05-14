@@ -43,6 +43,7 @@ struct csv_t {
     unsigned int line;          /**< The current line within the CSV document during parsing. */
     csv_field_t *fields;        /**< An array of fields use to storage field values during parsing. */
     unsigned int size;          /**< The number of fields. */
+    unsigned int read_size;     /**< The amount of data to read when parsing a file in streaming mode. */
     int mode;                   /**< Which mode the CSV handle is using to parse the CSV document. */
     char error[64];             /**< An error string when an operation fails. */
 };
@@ -61,6 +62,10 @@ csv_init() {
     csv_t *csv;
 
     csv = calloc(1, sizeof(*csv));
+    if (csv != NULL) {
+        csv->read_size = 1024;
+    }
+
     return csv;
 }
 
@@ -86,6 +91,7 @@ csv_free_helper(csv_t *csv) {
     }
 
     memset(csv, 0, sizeof(*csv));
+    csv->read_size = 1024;
 }
 
 void
@@ -378,8 +384,8 @@ csv_read_file_more(csv_t *csv) {
     unsigned int new_capacity, count;
     char *new_buf;
 
-    if (csv->buf_len + CSV_READ_SIZE >= csv->buf_capacity) {
-        new_capacity = csv->buf_capacity + CSV_READ_SIZE;
+    if (csv->buf_len + csv->read_size >= csv->buf_capacity) {
+        new_capacity = csv->buf_capacity + csv->read_size;
 
         CSV_PRINTF("Increasing buffer from %u to %u\n", csv->buf_capacity, new_capacity);
 
@@ -393,11 +399,11 @@ csv_read_file_more(csv_t *csv) {
         csv->buf_capacity = new_capacity;
     }
 
-    count = fread(csv->buf + csv->buf_len, sizeof(char), CSV_READ_SIZE, csv->f);
+    count = fread(csv->buf + csv->buf_len, sizeof(char), csv->read_size, csv->f);
     csv->buf_len += count;
     csv->buf[csv->buf_len] = '\0';
 
-    if (count != CSV_READ_SIZE) {
+    if (count != csv->read_size) {
         if (ferror(csv->f)) {
             strcpy(csv->error, strerror(errno));
             return CSV_READ_ERROR;

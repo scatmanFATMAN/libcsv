@@ -67,13 +67,13 @@ test_perform(test_t *test) {
 
     if (test->type == TEST_TYPE_FILE) {
         if (!csv_open_file(csv, test->data, test->allocate)) {
-            printf("    Fail: %s\n", csv_error(csv));
+            printf("    \033[1;31mFail: %s\033[0m\n", csv_error(csv));
             success = 0;
         }
     }
     else {
         if (!csv_open_str(csv, test->data, test->allocate)) {
-            printf("    Fail: %s\n", csv_error(csv));
+            printf("    \033[1;31mFail: %s\033[0m\n", csv_error(csv));
             success = 0;
         }
     }
@@ -82,7 +82,7 @@ test_perform(test_t *test) {
         while (1) {
             ret = csv_read(csv);
             if (ret == CSV_READ_ERROR) {
-                printf("    Fail: %s\n", csv_error(csv));
+                printf("    \033[1;31mFail: %s\033[0m\n", csv_error(csv));
                 break;
             }
             if (ret == CSV_READ_EOF) {
@@ -94,10 +94,10 @@ test_perform(test_t *test) {
                     value = csv_get(csv, test->conditions[i].col);
 
                     if (strcmp(value, test->conditions[i].value) == 0) {
-                        printf("    %u: Pass\n", i + 1);
+                        printf("    %u: \033[1;32mPass\033[0m\n", i + 1);
                     }
                     else {
-                        printf("    %u: Fail: '%s' != '%s'\n", i + 1, value, test->conditions[i].value);
+                        printf("    %u: \033[1;31mFail: '%s' != '%s'\033[0m\n", i + 1, value, test->conditions[i].value);
                         success = 0;
                     }
                 }
@@ -110,7 +110,9 @@ test_perform(test_t *test) {
     csv_free(csv);
 
     if (success)
-        printf("  Success!\n");
+        printf("  \033[1;32mAll tests passed!\033[0m\n");
+    else
+        printf("  \033[1;31mOne or more tests failed\033[0m\n");
 
     return success;
 }
@@ -128,9 +130,9 @@ main(int argc, char **argv) {
     test_add_condition(&test1, 1, 2, "55");
     test_add_condition(&test1, 1, 3, "Male");
     test_add_condition(&test1, 2, 0, "Jane");
-    test_add_condition(&test1, 3, 1, "Doe");
-    test_add_condition(&test1, 4, 2, "43");
-    test_add_condition(&test1, 5, 3, "Female");
+    test_add_condition(&test1, 2, 1, "Doe");
+    test_add_condition(&test1, 2, 2, "43");
+    test_add_condition(&test1, 2, 3, "Female");
 
     test_init(&test2, 2, TEST_TYPE_STR, 1, "Test basic value retrieval", csv1);
     test_add_condition(&test2, 1, 0, "John");
@@ -138,9 +140,9 @@ main(int argc, char **argv) {
     test_add_condition(&test2, 1, 2, "55");
     test_add_condition(&test2, 1, 3, "Male");
     test_add_condition(&test2, 2, 0, "Jane");
-    test_add_condition(&test2, 3, 1, "Doe");
-    test_add_condition(&test2, 4, 2, "43");
-    test_add_condition(&test2, 5, 3, "Female");
+    test_add_condition(&test2, 2, 1, "Doe");
+    test_add_condition(&test2, 2, 2, "43");
+    test_add_condition(&test2, 2, 3, "Female");
 
     test_init(&test3, 3, TEST_TYPE_STR, 0, "Quote test",
         "First,Last,Address\n"
