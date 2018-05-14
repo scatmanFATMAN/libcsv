@@ -51,11 +51,6 @@
  * escaped field is detected, then a character by character copy has to be done
  * so the escape characters are not copied.
  *
- * @section todo TODOs and Thoughts
- * - Offer a mode to always allocate and deallocate storage for fields. This
- *   might be useful for systems that have low memory available.
- * - Make CSV_READ_SIZE a variable that can be set per CSV handle.
- *
  * @section usage Basic Usage
  * @code
  * #include <stdlib.h>

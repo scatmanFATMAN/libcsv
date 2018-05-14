@@ -19,5 +19,9 @@ $(app_a): $(obj)
 %.o: %.c
 	$(cc) -o $@ -c $< $(cflags)
 
+install: release
+    cp $(app_s) /usr/local/lib
+    cp csv.h /usr/local/include
+
 clean:
 	rm -f $(app_s) $(app_a) $(obj)
