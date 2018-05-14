@@ -4,9 +4,9 @@ Simple and fast CSV parser.
 
 ## Features
 
-    * Small, fast, and lightweight.
-    * Handles Windows and Linux line endings.
-    * Stream files for extremely low memory use.
+   * Small, fast, and lightweight.
+   * Handles Windows and Linux line endings.
+   * Stream files for extremely low memory use.
 
 ## Installation
 
@@ -63,8 +63,8 @@ int main(int argc, char **argv) {
 
 ## TODO
 
-    * Offer a mode to always allocate and deallocate storage for fields. This might be useful for systems that have low memory available.
-    * Make CSV_READ_SIZE a variable that can be set per CSV handle.
-    * Handle UTF-8.
-    * Implement RFC 4180.
-    * Handle CSV files with no header.
+   * Offer a mode to always allocate and deallocate storage for fields. This might be useful for systems that have low memory available.
+   * Make CSV_READ_SIZE a variable that can be set per CSV handle.
+   * Handle UTF-8.
+   * Implement RFC 4180.
+   * Handle CSV files with no header.
