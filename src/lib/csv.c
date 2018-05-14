@@ -262,10 +262,11 @@ csv_read_field(csv_t *csv, unsigned int index, int first) {
     int quote = 0, escape = 0;
     char *end;
 
+    //RFC 4180 states that spaces should be preserved
     //skip leading spaces
-    while (*csv->buf_ptr == ' ') {
-        ++csv->buf_ptr;
-    }
+//    while (*csv->buf_ptr == ' ') {
+//        ++csv->buf_ptr;
+//    }
 
     if (*csv->buf_ptr == '"') {
         quote = 1;
@@ -306,8 +307,13 @@ csv_read_field(csv_t *csv, unsigned int index, int first) {
         ++end;
     csv->buf_ptr = end;
 
-    if (*end == '\0' || *end == '\r' || *end == '\n')
+    if (*csv->buf_ptr == '\0' || *csv->buf_ptr == '\r' || *csv->buf_ptr == '\n') {
+        if (*csv->buf_ptr == '\r')
+            ++csv->buf_ptr;
+        if (*csv->buf_ptr == '\n')
+            ++csv->buf_ptr;
         return CSV_READ_FIELD_EOL;
+    }
 
     return CSV_READ_FIELD_OK;
 }
@@ -361,8 +367,8 @@ csv_read_line(csv_t *csv, int first) {
         }
     }
 
-    while (*csv->buf_ptr != '\0' && isspace(*csv->buf_ptr))
-        ++csv->buf_ptr;
+//    while (*csv->buf_ptr != '\0' && isspace(*csv->buf_ptr))
+//        ++csv->buf_ptr;
 
     return 1;
 }

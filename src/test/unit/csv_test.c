@@ -117,7 +117,7 @@ test_perform(test_t *test) {
 
 int
 main(int argc, char **argv) {
-    test_t test1, test2, test3;
+    test_t test1, test2, test3, test4;
     static const char * csv1 = "First,Last,Age,Sex\n"
                                "John,Smith,55,Male\n"
                                "Jane,Doe,43,Female";
@@ -153,13 +153,26 @@ main(int argc, char **argv) {
     test_add_condition(&test3, 2, 1, "Doe");
     test_add_condition(&test3, 2, 2, "592 5th street, SW");
 
+    test_init(&test4, 4, TEST_TYPE_STR, 0, "Space test",
+        "First,Last,Address\n"
+        " John ,    Smith,125 Basic Street  \n"
+        "Jane   , Doe , 592 5th Street");
+    test_add_condition(&test4, 1, 0, " John ");
+    test_add_condition(&test4, 1, 1, "    Smith");
+    test_add_condition(&test4, 1, 2, "125 Basic Street  ");
+    test_add_condition(&test4, 2, 0, "Jane   ");
+    test_add_condition(&test4, 2, 1, " Doe ");
+    test_add_condition(&test4, 2, 2, " 592 5th Street");
+
     test_perform(&test1);
     test_perform(&test2);
     test_perform(&test3);
+    test_perform(&test4);
 
     test_free(&test1);
     test_free(&test2);
     test_free(&test3);
+    test_free(&test4);
 
     return 0;
 }
