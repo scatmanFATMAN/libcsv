@@ -1,6 +1,6 @@
 # libcsv
 
-Simple and fast CSV parser.
+Simple, fast, and lightweight CSV parser written in C.
 
 ## Features
 
@@ -66,7 +66,6 @@ int main(int argc, char **argv) {
 * Offer a mode to always allocate and deallocate storage for fields. This might be useful for systems that have low memory available.
 * Handle UTF-8.
 * Implement RFC 4180.
-* Handle CSV files with no header.
 
 ## License
 

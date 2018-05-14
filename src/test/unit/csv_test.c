@@ -19,18 +19,20 @@ typedef struct {
     test_type_t type;
     const char *data;
     int allocate;
+    int header;
     const char *description;
     unsigned int num_conditions;
     test_condition_t *conditions;
 } test_t;
 
 static void
-test_init(test_t *test, unsigned int num, test_type_t type, int allocate, const char *description, const char *data) {
+test_init(test_t *test, unsigned int num, test_type_t type, int allocate, int header, const char *description, const char *data) {
     memset(test, 0, sizeof(*test));
 
     test->num = num;
     test->type = type;
     test->allocate = allocate;
+    test->header = header;
     test->description = description;
     test->data = data;
 }
@@ -64,6 +66,10 @@ test_perform(test_t *test) {
     printf("  Allocate: %s\n", test->allocate ? "Yes" : "No");
 
     csv = csv_init();
+
+    if (!test->header) {
+        csv_set_header(csv, 0);
+    }
 
     if (test->type == TEST_TYPE_FILE) {
         if (!csv_open_file(csv, test->data, test->allocate)) {
@@ -119,12 +125,12 @@ test_perform(test_t *test) {
 
 int
 main(int argc, char **argv) {
-    test_t test1, test2, test3, test4;
+    test_t test1, test2, test3, test4, test5;
     static const char * csv1 = "First,Last,Age,Sex\n"
                                "John,Smith,55,Male\n"
                                "Jane,Doe,43,Female";
 
-    test_init(&test1, 1, TEST_TYPE_STR, 0, "Test basic value retrieval", csv1);
+    test_init(&test1, 1, TEST_TYPE_STR, 0, 1, "Test basic value retrieval", csv1);
     test_add_condition(&test1, 1, 0, "John");
     test_add_condition(&test1, 1, 1, "Smith");
     test_add_condition(&test1, 1, 2, "55");
@@ -134,7 +140,7 @@ main(int argc, char **argv) {
     test_add_condition(&test1, 2, 2, "43");
     test_add_condition(&test1, 2, 3, "Female");
 
-    test_init(&test2, 2, TEST_TYPE_STR, 1, "Test basic value retrieval", csv1);
+    test_init(&test2, 2, TEST_TYPE_STR, 1, 1, "Test basic value retrieval", csv1);
     test_add_condition(&test2, 1, 0, "John");
     test_add_condition(&test2, 1, 1, "Smith");
     test_add_condition(&test2, 1, 2, "55");
@@ -144,7 +150,7 @@ main(int argc, char **argv) {
     test_add_condition(&test2, 2, 2, "43");
     test_add_condition(&test2, 2, 3, "Female");
 
-    test_init(&test3, 3, TEST_TYPE_STR, 0, "Quote test",
+    test_init(&test3, 3, TEST_TYPE_STR, 0, 1, "Quotes and escaping",
         "First,Last,Address\n"
         "\"John \"\"The Generic\"\"\",Smith,125 Basic Street\n"
         "Jane,\"Doe\",\"592 5th street, SW\"");
@@ -155,7 +161,7 @@ main(int argc, char **argv) {
     test_add_condition(&test3, 2, 1, "Doe");
     test_add_condition(&test3, 2, 2, "592 5th street, SW");
 
-    test_init(&test4, 4, TEST_TYPE_STR, 0, "Space test",
+    test_init(&test4, 4, TEST_TYPE_STR, 0, 1, "Preserve spaces",
         "First,Last,Address\n"
         " John ,    Smith,125 Basic Street  \n"
         "Jane   , Doe , 592 5th Street");
@@ -166,15 +172,27 @@ main(int argc, char **argv) {
     test_add_condition(&test4, 2, 1, " Doe ");
     test_add_condition(&test4, 2, 2, " 592 5th Street");
 
+    test_init(&test5, 5, TEST_TYPE_STR, 0, 0, "No header",
+        "John,Smith,125 Basic Street\n"
+        "Jane,Doe,592 5th Street");
+    test_add_condition(&test5, 1, 0, "John");
+    test_add_condition(&test5, 1, 1, "Smith");
+    test_add_condition(&test5, 1, 2, "125 Basic Street");
+    test_add_condition(&test5, 2, 0, "Jane");
+    test_add_condition(&test5, 2, 1, "Doe");
+    test_add_condition(&test5, 2, 2, "592 5th Street");
+
     test_perform(&test1);
     test_perform(&test2);
     test_perform(&test3);
     test_perform(&test4);
+    test_perform(&test5);
 
     test_free(&test1);
     test_free(&test2);
     test_free(&test3);
     test_free(&test4);
+    test_free(&test5);
 
     return 0;
 }

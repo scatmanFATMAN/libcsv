@@ -44,6 +44,7 @@ struct csv_t {
     csv_field_t *fields;        /**< An array of fields use to storage field values during parsing. */
     unsigned int size;          /**< The number of fields. */
     unsigned int read_size;     /**< The amount of data to read when parsing a file in streaming mode. */
+    int no_header;              /**< Set to 1 if the CSV document has no header. */
     int mode;                   /**< Which mode the CSV handle is using to parse the CSV document. */
     char error[64];             /**< An error string when an operation fails. */
 };
@@ -73,12 +74,14 @@ static void
 csv_free_helper(csv_t *csv) {
     unsigned int i;
 
-    if (csv->f != NULL)
+    if (csv->f != NULL) {
         fclose(csv->f);
+    }
 
     if (csv->mode != CSV_MODE_STR_NO_ALLOCATE) {
-        if (csv->buf != NULL)
+        if (csv->buf != NULL) {
             free(csv->buf);
+        }
     }
 
     if (csv->fields != NULL) {
@@ -90,8 +93,16 @@ csv_free_helper(csv_t *csv) {
         free(csv->fields);
     }
 
-    memset(csv, 0, sizeof(*csv));
-    csv->read_size = 1024;
+    csv->f = NULL;
+    csv->buf = NULL;
+    csv->buf_ptr = NULL;
+    csv->buf_capacity = 0;
+    csv->buf_len = 0;
+    csv->line = 0;
+    csv->fields = NULL;
+    csv->size = 0;
+    csv->mode = 0;
+    csv->error[0] = '\0';
 }
 
 void
@@ -100,6 +111,16 @@ csv_free(csv_t *csv) {
         csv_free_helper(csv);
         free(csv);
     }
+}
+
+void
+csv_set_read_size(csv_t *csv, unsigned int read_size) {
+    csv->read_size = read_size;
+}
+
+void
+csv_set_header(csv_t *csv, int value) {
+    csv->no_header = value == 0 ? 1 : 0;
 }
 
 const char *
@@ -364,6 +385,11 @@ csv_read_line(csv_t *csv, int first) {
         if (csv->fields == NULL) {
             strcpy(csv->error, "Out of memory");
             return 0;
+        }
+
+        if (csv->no_header) {
+            csv->buf_ptr = csv->buf;
+            --csv->line;
         }
     }
     else {

@@ -142,8 +142,20 @@ void csv_free(csv_t *csv);
  * @param[in] csv A CSV handle.
  * @param[in] read_size The size of the read buffer.
  */
-void csv_set_read_size(csv_t *csv, unsigned int read_size) {
-}
+void csv_set_read_size(csv_t *csv, unsigned int read_size);
+
+/**
+ * @brief Sets whether or not the library should expect a header.
+ *
+ * Use this to tell the library whether or not the CSV document has a header.
+ * This must be called before csv_open_file() or csv_open_string() is called
+ * since the header is read during those two calls. By default, the library
+ * will look for a header.
+ *
+ * @param[in] csv A CSV handle.
+ * @param[in] value 1 if the CSV document has a header, or 0 if not.
+ */
+void csv_set_header(csv_t *csv, int value);
 
 /**
  * @brief Returns the error message from a previously failed operation.
