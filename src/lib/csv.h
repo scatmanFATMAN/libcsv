@@ -26,14 +26,14 @@
  * @section read_from_file Reading From a File
  * When reading from a file, you would typically stream it if the system does
  * not have a lot of memory available to it or if the CSV file is very large.
- * The library will initially allocate a buffer of size CSV_READ_SIZE bytes
- * and will try to reuse that buffer over and over again. If a line is not
- * found within CSV_READ_SIZE bytes, then the buffer will be expanded by
- * CSV_READ_SIZE bytes until a line is found. This buffer will not be
- * deallocated until csv_close() is called. This usually isn't the quickest
- * method because the library needs to make sure an entire line exists in the
- * buffer before parsing it. However, this method scales very well and should
- * let you read a file of any size.
+ * The library will initially allocate a buffer of 1024 bytes and will try to
+ * reuse that buffer over and over again. If a line is not found within 1024
+ * bytes, then the buffer will be expanded by 1024 bytes until a line is found.
+ * This buffer will not be deallocated until csv_close() is called. This amount
+ * can be changed by calling csv_set_read_size(). This usually isn't the
+ * quickest method because the library needs to make sure an entire line exists
+ * in the buffer before parsing it. However, this method scales very well and
+ * should let you read a file of any size.
  *
  * @section read_from_string Reading From a String
  * When reading from a string, the library acts exactly the same whether or not
@@ -59,7 +59,7 @@
  *
  * int main(int argc, char **argv) {
  *    csv_t *csv;
- *    csv_read_t *ret;
+ *    csv_read_t ret;
  *
  *    csv = csv_init();
  *    if (csv == NULL) {

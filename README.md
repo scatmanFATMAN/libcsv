@@ -7,6 +7,8 @@ Simple, fast, and lightweight CSV parser written in C.
 * Small, fast, and lightweight.
 * Handles Windows and Linux line endings.
 * Stream files for extremely low memory use.
+* Handle files without a header.
+* Allow field values to automatically be trimmed.
 
 ## Installation
 
@@ -26,7 +28,7 @@ The following example demonstrates how to parse a file in streaming mode.
 
 int main(int argc, char **argv) {
     csv_t *csv;
-    csv_read_t *ret;
+    csv_read_t ret;
 
     csv = csv_init();
     if (csv == NULL) {
@@ -65,7 +67,7 @@ int main(int argc, char **argv) {
 
 * Offer a mode to always allocate and deallocate storage for fields. This might be useful for systems that have low memory available.
 * Handle UTF-8.
-* Implement RFC 4180.
+* Implement RFC 4180 completely.
 
 ## License
 
