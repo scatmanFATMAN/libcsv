@@ -272,15 +272,16 @@ csv_add_field(csv_t *csv, unsigned int index, char *str, unsigned int len, int e
     else {
         if (len > 0 && !quote) {
             if (csv->flags & CSV_FLAG_LEFT_TRIM) {
-                while (*str == ' ' && len > 0) {
+                while (len > 0 && *str == ' ') {
                     ++str;
                     --len;
                 }
             }
 
             if (csv->flags & CSV_FLAG_RIGHT_TRIM) {
-                while (str[len - 1] == ' ' && len >= 0)
+                while (len > 0 && str[len - 1] == ' ') {
                     --len;
+                }
             }
         }
 
