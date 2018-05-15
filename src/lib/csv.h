@@ -148,14 +148,51 @@ void csv_set_read_size(csv_t *csv, unsigned int read_size);
  * @brief Sets whether or not the library should expect a header.
  *
  * Use this to tell the library whether or not the CSV document has a header.
- * This must be called before csv_open_file() or csv_open_string() is called
- * since the header is read during those two calls. By default, the library
- * will look for a header.
+ * This must be called before csv_open_file() or csv_open_string() is called.
+ * By default, the library will look for a header.
  *
  * @param[in] csv A CSV handle.
  * @param[in] value 1 if the CSV document has a header, or 0 if not.
  */
 void csv_set_header(csv_t *csv, int value);
+
+/**
+ * @brief Sets whether or not the library should left trim field values.
+ *
+ * Use this to tell the library whether or not CSV field values should be
+ * left trimmed. This must be called before csv_open_file() or
+ * csv_open_string(). By default, the library will not left trim values.
+ *
+ * @param[in] csv A CSV handle.
+ * @param[in] value 1 if fields should be left trimmed, or 0 if not.
+ */
+void csv_set_left_trim(csv_t *csv, int value);
+
+/**
+ * @brief Sets whether or not the library should left right field values.
+ *
+ * Use this to tell the library whether or not CSV field values should be
+ * right trimmed. This must be called before csv_open_file() or
+ * csv_open_string(). By default, the library will not right trim values.
+ *
+ * @param[in] csv A CSV handle.
+ * @param[in] value 1 if fields should be right trimmed, or 0 if not.
+ */
+void csv_set_right_trim(csv_t *csv, int value);
+
+/**
+ * @brief Sets whether or not the library should trim field values.
+ *
+ * Use this to tell the library wehther or not CSV field values should be
+ * left and right trimmed. This must be called before csv_open_file() or
+ * csv_open_string(). By default, the library will not trim values. Calling
+ * this function is the same as calling csv_set_left_trim() and
+ * csv_set_right_trim().
+ *
+ * @param[in] csv A CSV handle.
+ * @param[in] value 1 if fields should be trimmed, or 0 if not.
+ */
+void csv_set_trim(csv_t *csv, int value);
 
 /**
  * @brief Returns the error message from a previously failed operation.

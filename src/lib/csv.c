@@ -17,10 +17,20 @@
 # define CSV_PRINTF(fmt, ...)
 #endif
 
-#define CSV_MODE_FILE_ALLOCATE     1
-#define CSV_MODE_FILE_NO_ALLOCATE  2
-#define CSV_MODE_STR_ALLOCATE      3
-#define CSV_MODE_STR_NO_ALLOCATE   4
+/**
+ * Different types of modes that the CSV parser can be in.
+ */
+#define CSV_MODE_FILE_ALLOCATE     1    /**< Parse a file and load the entire file into memory. */
+#define CSV_MODE_FILE_NO_ALLOCATE  2    /**< Parse a file but only read from the file as needed. This is also called streaming mode. */
+#define CSV_MODE_STR_ALLOCATE      3    /**< Parse a string a make a copy of it in memory. */
+#define CSV_MODE_STR_NO_ALLOCATE   4    /**< Parse a string but don't make a copy of it in memory. */
+
+/**
+ * Various flags that affect CSV parsing.
+ */
+#define CSV_FLAG_NO_HEADER  1   /**< The file doesn't have a header. */
+#define CSV_FLAG_LEFT_TRIM  2   /**< Left trim CSV fields. */
+#define CSV_FLAG_RIGHT_TRIM 4   /**< Right trim CSV fields. */
 
 /**
  * A CSV field.
@@ -44,8 +54,8 @@ struct csv_t {
     csv_field_t *fields;        /**< An array of fields use to storage field values during parsing. */
     unsigned int size;          /**< The number of fields. */
     unsigned int read_size;     /**< The amount of data to read when parsing a file in streaming mode. */
-    int no_header;              /**< Set to 1 if the CSV document has no header. */
     int mode;                   /**< Which mode the CSV handle is using to parse the CSV document. */
+    int flags;                  /**< Bitwise field of flags that effect parsing. */
     char error[64];             /**< An error string when an operation fails. */
 };
 
@@ -118,9 +128,35 @@ csv_set_read_size(csv_t *csv, unsigned int read_size) {
     csv->read_size = read_size;
 }
 
+static void
+csv_set_flag(csv_t *csv, int flag, int on) {
+    if (on) {
+        csv->flags |= flag;
+    }
+    else {
+        csv->flags &= ~flag;
+    }
+}
+
 void
 csv_set_header(csv_t *csv, int value) {
-    csv->no_header = value == 0 ? 1 : 0;
+    csv_set_flag(csv, CSV_FLAG_NO_HEADER, value ? 0 : 1);
+}
+
+void
+csv_set_left_trim(csv_t *csv, int value) {
+    csv_set_flag(csv, CSV_FLAG_LEFT_TRIM, value);
+}
+
+void
+csv_set_right_trim(csv_t *csv, int value) {
+    csv_set_flag(csv, CSV_FLAG_RIGHT_TRIM, value);
+}
+
+void
+csv_set_trim(csv_t *csv, int value) {
+    csv_set_left_trim(csv, value);
+    csv_set_right_trim(csv, value);
 }
 
 const char *
@@ -226,7 +262,7 @@ csv_close(csv_t *csv) {
 }
 
 static int
-csv_add_field(csv_t *csv, unsigned int index, char *str, unsigned int len, int escape, int first) {
+csv_add_field(csv_t *csv, unsigned int index, char *str, unsigned int len, int escape, int quote, int first) {
     unsigned int i, j;
 
     if (first) {
@@ -234,6 +270,20 @@ csv_add_field(csv_t *csv, unsigned int index, char *str, unsigned int len, int e
         ++csv->size;
     }
     else {
+        if (len > 0 && !quote) {
+            if (csv->flags & CSV_FLAG_LEFT_TRIM) {
+                while (*str == ' ' && len > 0) {
+                    ++str;
+                    --len;
+                }
+            }
+
+            if (csv->flags & CSV_FLAG_RIGHT_TRIM) {
+                while (str[len - 1] == ' ' && len >= 0)
+                    --len;
+            }
+        }
+
         CSV_PRINTF("Adding field: index: %u, length: %u\n", index, len);
 
         if (len == 0) {
@@ -303,30 +353,45 @@ csv_read_field(csv_t *csv, unsigned int index, int first) {
     end = csv->buf_ptr;
 
     while (1) {
-        if (quote && *end == '"') {
-            if (*(end + 1) == '"') {
-                escape = 1;
-                end += 2;
+        if (quote) {
+            if (*end == '"') {
+                if (*(end + 1) == '"') {
+                    escape = 1;
+                    end += 2;
+                }
+                else {
+                    if (!csv_add_field(csv, index, csv->buf_ptr, end - csv->buf_ptr, escape, quote, first)) {
+                        return CSV_READ_FIELD_ERROR;
+                    }
+
+                    ++end;
+
+                    while (*end != '\0' && *end != ',' && *end != '\r' && *end != '\n')
+                        ++end;
+
+                    break;
+                }
             }
             else {
-                if (!csv_add_field(csv, index, csv->buf_ptr, end - csv->buf_ptr, escape, first)) {
+                ++end;
+            }
+        }
+        else {
+            if (*end == '\0' || *end == ',' || *end == '\r' || *end == '\n') {
+                if (!csv_add_field(csv, index, csv->buf_ptr, end - csv->buf_ptr, escape, quote, first)) {
                     return CSV_READ_FIELD_ERROR;
                 }
 
-                ++end;
                 break;
             }
-        }
-        else if (!quote && (*end == '\0' || *end == ',' || *end == '\n' || *end == '\r')) {
-            if (!csv_add_field(csv, index, csv->buf_ptr, end - csv->buf_ptr, escape, first)) {
-                return CSV_READ_FIELD_ERROR;
+            else if (*end == '"') {
+                quote = 1;
+                ++end;
+                csv->buf_ptr = end;
             }
-
-            break;
-        }
-        else {
-
-            ++end;
+            else {
+                ++end;
+            }
         }
     }
 
@@ -387,7 +452,7 @@ csv_read_line(csv_t *csv, int first) {
             return 0;
         }
 
-        if (csv->no_header) {
+        if (csv->flags & CSV_FLAG_NO_HEADER) {
             csv->buf_ptr = csv->buf;
             --csv->line;
         }
