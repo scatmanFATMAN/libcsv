@@ -401,10 +401,13 @@ csv_read_field(csv_t *csv, unsigned int index, int first) {
     csv->buf_ptr = end;
 
     if (*csv->buf_ptr == '\0' || *csv->buf_ptr == '\r' || *csv->buf_ptr == '\n') {
-        if (*csv->buf_ptr == '\r')
+        while (*csv->buf_ptr == '\r' || *csv->buf_ptr == '\n') {
             ++csv->buf_ptr;
-        if (*csv->buf_ptr == '\n')
-            ++csv->buf_ptr;
+        }
+//        if (*csv->buf_ptr == '\r')
+//            ++csv->buf_ptr;
+//        if (*csv->buf_ptr == '\n')
+//            ++csv->buf_ptr;
         return CSV_READ_FIELD_EOL;
     }
 

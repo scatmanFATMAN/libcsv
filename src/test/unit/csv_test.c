@@ -239,8 +239,9 @@ main(int argc, char **argv) {
 
     test_init(&test10, 10, TEST_TYPE_STR, 0, 1, 1024, 0, 0, "Miscellaneous",
         "First,Last,Address\n"
+        "\n\n\n"
         "\"John\",\"Smith\"  , \"125 Basic Street\"\n"
-        "Jane,Doe,592 5th Street");
+        "Jane,Doe,592 5th Street\n\n");
     test_add_condition(&test10, 1, 0, "John");
     test_add_condition(&test10, 1, 1, "Smith");
     test_add_condition(&test10, 1, 2, "125 Basic Street");
