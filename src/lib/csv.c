@@ -501,8 +501,9 @@ csv_read_file_more(csv_t *csv) {
             return CSV_READ_ERROR;
         }
 
-        if (count == 0)
+        if (count == 0) {
             return CSV_READ_EOF;
+        }
     }
 
     return CSV_READ_OK;
@@ -541,11 +542,9 @@ csv_read(csv_t *csv) {
             }
 
             ret = csv_read_file_more(csv);
-            if (ret == CSV_READ_ERROR)
-                return CSV_READ_ERROR;
-
-            if (ret == CSV_READ_EOF)
-                break;
+            if (ret != CSV_READ_OK) {
+                return ret;
+            }
         }
 
         csv->buf_ptr = csv->buf;
